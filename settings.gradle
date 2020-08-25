@@ -1,0 +1,3 @@
+include ':blecamera'
+include ':app'
+rootProject.name = "grandcentrixlibrary"
