@@ -10,4 +10,7 @@ interface BleCameraListenerContract {
     fun showCustomEnableLocationServicesDialog()
     fun showCustomEnableBluetoothDialog()
     fun updateDeviceStateInUi(macAddress: String, connectionState: BleDeviceState)
+
+    fun onCameraActionSuccess()
+    fun onCameraActionError()
 }

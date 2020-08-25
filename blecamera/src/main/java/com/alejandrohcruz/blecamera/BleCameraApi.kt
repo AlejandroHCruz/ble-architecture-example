@@ -2,15 +2,16 @@ package com.alejandrohcruz.blecamera
 
 import android.location.Location
 
+/**
+ * Entry point for the app module to communicate with this library
+ */
 interface BleCameraApi {
-
-    // TODO: Base Activity/Fragment to handle this and permissions
-    fun onGpsRequested()
-    fun sendGps(location: Location)
 
     fun connect(macAddress: String)
 
+    fun sendGps(location: Location)
     fun takePhoto()
     fun startVideoRecording()
     fun stopVideoRecording()
+
 }

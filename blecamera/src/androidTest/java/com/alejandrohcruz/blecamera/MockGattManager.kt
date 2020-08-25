@@ -23,8 +23,8 @@ class MockGattManager(
 
     override var bleCameraDevice: BleDeviceContract? = null
 
-    override val readWriteListener: BleReadWriteListenerContract = MockBleReadWriteListener()
-    override val notificationListener: BleNotificationListenerContract = MockBleNotificationListener()
+    override val readWriteListener: BleReadWriteListenerContract = MockBleReadWriteListener(this)
+    override val notificationListener: BleNotificationListenerContract = MockBleNotificationListener(this)
 
     override fun connect(macAddress: String) {
 

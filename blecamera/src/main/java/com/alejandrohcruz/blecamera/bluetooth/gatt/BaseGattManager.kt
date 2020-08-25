@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
 abstract class BaseGattManager(
     applicationContext: Context?,
     var bleCameraListener: BleCameraListenerContract?
-) : ContextWrapper(applicationContext), GattManagerContract, BleCameraApi {
+) : ContextWrapper(applicationContext), GattManagerContract {
 
     // TODO: Bluetooth adapter state. Add a delay in the tests?
 

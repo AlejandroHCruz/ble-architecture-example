@@ -23,6 +23,11 @@ object BleCameraProfile {
             override val minPacketLength = 1
             override val maxPacketLength = 1
             override val permissionType = BleCharacteristicPermission.Notify.value
+
+            enum class GpsRequest {
+                Invalid,
+                Requested
+            }
         }
 
         object GpsResponseCharacteristic : BleCharacteristic {
@@ -43,6 +48,22 @@ object BleCameraProfile {
                 TakePhoto,
                 StartVideoRecording,
                 StopVideoRecording
+            }
+
+            enum class CameraTriggerResponseEnum(value: Int) {
+                Invalid(0),
+                SuccessfulPhoto(1),
+                SuccessfulVideoStart(2),
+                SuccessfulVideoEnd(3),
+                FailedVideoStartAlreadyStarted(4);
+
+                companion object {
+
+                    // Keep in memory, avoid re-creating a new array every time fromInt() is called
+                    private val values = values()
+
+                    fun fromInt(value: Int?) = values.firstOrNull { it.ordinal == value } ?: Invalid
+                }
             }
         }
     }

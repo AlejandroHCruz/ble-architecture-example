@@ -1,5 +1,8 @@
 package com.alejandrohcruz.blecamera.bluetooth.gatt.contracts
 
-interface BleReadWriteListenerContract {
+import com.alejandrohcruz.blecamera.bluetooth.base.BleOperation
 
+interface BleReadWriteListenerContract {
+    val gattManager: GattManagerContract
+    fun onSuccessfulWriteResponseReceived(bleOperation: BleOperation)
 }
