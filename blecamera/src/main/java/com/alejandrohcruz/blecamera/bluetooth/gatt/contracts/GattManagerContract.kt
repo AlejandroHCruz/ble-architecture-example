@@ -10,6 +10,7 @@ interface GattManagerContract : BleCameraApi {
     var bleCameraDevice: BleDeviceContract?
     val readWriteListener: BleReadWriteListenerContract
     val notificationListener: BleNotificationListenerContract
+    var bleCameraListener: BleCameraListenerContract?
 
     fun onDeviceConnected(macAddress: String)
     fun onDeviceDisconnected(macAddress: String)

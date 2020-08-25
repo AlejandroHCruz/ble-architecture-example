@@ -16,15 +16,16 @@ import kotlin.collections.ArrayList
 
 class MockGattManager(
     applicationContext: Context?,
-    bleCameraListener: BleCameraListenerContract?
-) : BaseGattManager(applicationContext, bleCameraListener) {
+    override var bleCameraListener: BleCameraListenerContract?
+) : BaseGattManager(applicationContext) {
 
     // TODO: Bluetooth adapter state. Add a delay in the tests for that?
 
     override var bleCameraDevice: BleDeviceContract? = null
 
     override val readWriteListener: BleReadWriteListenerContract = MockBleReadWriteListener(this)
-    override val notificationListener: BleNotificationListenerContract = MockBleNotificationListener(this)
+    override val notificationListener: BleNotificationListenerContract =
+        MockBleNotificationListener(this)
 
     override fun connect(macAddress: String) {
 
@@ -32,12 +33,12 @@ class MockGattManager(
 
         Handler(Looper.getMainLooper()).postDelayed({
             onDeviceConnected(macAddress)
-        },300L)
+        }, 300L)
     }
 
     override fun onDeviceConnected(macAddress: String) {
 
-        bleCameraDevice = MockBleDevice().apply {
+        bleCameraDevice = MockBleDevice(readWriteListener as MockBleReadWriteListener).apply {
 
             this.macAddress = macAddress
 
@@ -59,7 +60,8 @@ class MockGattManager(
         // TODO: Use https://github.com/mcharmas/Android-ReactiveLocation ?
     }
 
-    internal class MockBleDevice : BaseBleDevice() {
+    internal class MockBleDevice(private val readWriteListener: MockBleReadWriteListener) :
+        BaseBleDevice() {
 
         private var notifyingCharacteristicUuids = ArrayList<UUID>()
 
@@ -72,11 +74,16 @@ class MockGattManager(
             verifyOperationCanBeEnqueued(bleOperation).let { error ->
 
                 if (error == BleEnqueueingError.None) {
+
+                    //region mock response of this operation
                     Looper.myLooper()?.let {
                         Handler(it).postDelayed({
-                            // TODO: Trigger response
+                            readWriteListener.onSuccessfulWriteResponseReceived(
+                                bleOperation
+                            )
                         }, 30)
                     }
+                    //endregion
                 }
 
                 return error

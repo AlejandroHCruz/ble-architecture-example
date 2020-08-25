@@ -1,6 +1,5 @@
 package com.alejandrohcruz.blecamera.bluetooth.base
 
-import androidx.annotation.CallSuper
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleDeviceState
 

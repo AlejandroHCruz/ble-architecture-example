@@ -1,6 +1,7 @@
 package com.alejandrohcruz.blecamera
 
 import com.alejandrohcruz.blecamera.bluetooth.base.BleOperation
+import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService.GpsRequestCharacteristic
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService.GpsRequestCharacteristic.GpsRequest
 import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.BleNotificationListenerContract

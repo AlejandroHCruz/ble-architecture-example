@@ -16,22 +16,22 @@ internal class MockBleReadWriteListener(override val gattManager: GattManagerCon
 
             TriggerCameraCharacteristic.uuid -> {
 
-                when (CameraTriggerResponseEnum.fromInt(bleOperation.data?.toIntLittleEndian())) {
+                val responseEnum =
+                    CameraTriggerResponseEnum.fromInt(bleOperation.data?.toIntLittleEndian())
+
+                when (responseEnum) {
 
                     CameraTriggerResponseEnum.Invalid -> {
                         // TODO: Log
                     }
-                    CameraTriggerResponseEnum.SuccessfulPhoto -> {
-
-                    }
-                    CameraTriggerResponseEnum.SuccessfulVideoStart -> {
-
-                    }
+                    CameraTriggerResponseEnum.SuccessfulPhoto,
+                    CameraTriggerResponseEnum.SuccessfulVideoStart,
                     CameraTriggerResponseEnum.SuccessfulVideoEnd -> {
-
+                        gattManager.bleCameraListener?.onCameraActionSuccess(responseEnum)
                     }
-                    CameraTriggerResponseEnum.FailedVideoStartAlreadyStarted -> {
 
+                    CameraTriggerResponseEnum.FailedVideoStartAlreadyStarted -> {
+                        gattManager.bleCameraListener?.onCameraActionError(responseEnum)
                     }
                 }
             }
