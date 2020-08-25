@@ -1,6 +1,7 @@
 package com.alejandrohcruz.blecamera
 
 import android.content.Context
+import android.location.Location
 import android.os.Handler
 import android.os.Looper
 import com.alejandrohcruz.blecamera.bluetooth.base.*
@@ -55,9 +56,21 @@ class MockGattManager(
     }
 
     override fun onGpsRequested() {
-        // TODO: Request GPS directly if possible, otherwise ask the listener to show custom dialog
-        // TODO: Either bleCameraListener?.onGpsRequested() OR request GPS inside the library direct
-        // TODO: Use https://github.com/mcharmas/Android-ReactiveLocation ?
+        // Note: A good library to use is: https://github.com/mcharmas/Android-ReactiveLocation
+
+        //region mock response of this request
+        Looper.myLooper()?.let {
+            Handler(it).postDelayed({
+                Location("MockGattManager").apply {
+                    time = System.currentTimeMillis()
+                    latitude = 25.42321
+                    longitude = -101.0053
+                    altitude = 1592.0
+                    sendGps(this) // Saltillo, Mexico!
+                }
+            }, 100)
+        }
+        //endregion
     }
 
     internal class MockBleDevice(private val readWriteListener: MockBleReadWriteListener) :
