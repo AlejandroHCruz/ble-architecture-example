@@ -15,6 +15,7 @@ object BleCameraProfile {
 
     object CameraService : BleService {
 
+        // TODO: Define properly
         override val uuid: UUID = UUID.fromString("000")
 
         object GpsRequestCharacteristic : BleCharacteristic {

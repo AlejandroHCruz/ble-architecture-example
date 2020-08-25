@@ -1,4 +1,4 @@
-package com.alejandrohcruz.blecamera.bluetooth.gatt
+package com.alejandrohcruz.blecamera
 
 import android.content.Context
 import android.os.Handler
@@ -7,24 +7,24 @@ import com.alejandrohcruz.blecamera.bluetooth.base.*
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCharacteristicPermission
-import com.alejandrohcruz.blecamera.bluetooth.gatt.listeners.BleCameraListener
-import com.alejandrohcruz.blecamera.bluetooth.gatt.listeners.BleNotificationListener
-import com.alejandrohcruz.blecamera.bluetooth.gatt.listeners.BleReadWriteListener
+import com.alejandrohcruz.blecamera.bluetooth.gatt.BaseGattManager
+import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.BleCameraListenerContract
+import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.BleNotificationListenerContract
+import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.BleReadWriteListenerContract
 import java.util.*
 import kotlin.collections.ArrayList
 
 class MockGattManager(
     applicationContext: Context?,
-    bleCameraListener: BleCameraListener?
+    bleCameraListener: BleCameraListenerContract?
 ) : BaseGattManager(applicationContext, bleCameraListener) {
 
     // TODO: Bluetooth adapter state. Add a delay in the tests for that?
 
     override var bleCameraDevice: BleDeviceContract? = null
 
-    // TODO: Mock these 2?
-    override val readWriteListener = BleReadWriteListener()
-    override val notificationListener = BleNotificationListener()
+    override val readWriteListener: BleReadWriteListenerContract = MockBleReadWriteListener()
+    override val notificationListener: BleNotificationListenerContract = MockBleNotificationListener()
 
     override fun connect(macAddress: String) {
 
@@ -95,6 +95,28 @@ class MockGattManager(
 
         override fun isNotifyEnabledForCharacteristic(bleCharacteristic: BleCharacteristic): Boolean {
             return notifyingCharacteristicUuids.contains(bleCharacteristic.uuid)
+        }
+    }
+
+    companion object {
+
+        private var instance: BleCameraApi? = null
+
+        /**
+         * Entry point for the test module.
+         */
+        fun getInstance(
+            applicationContext: Context?,
+            bleCameraListener: BleCameraListenerContract?
+        ): BleCameraApi {
+            return instance ?: MockGattManager(
+                applicationContext,
+                bleCameraListener
+            )
+        }
+
+        fun destroyInstance() {
+            instance = null
         }
     }
 }

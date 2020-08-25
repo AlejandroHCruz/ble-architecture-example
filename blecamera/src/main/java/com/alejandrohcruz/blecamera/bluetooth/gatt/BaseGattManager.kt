@@ -13,26 +13,23 @@ import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraS
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService.TriggerCameraCharacteristic
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService.TriggerCameraCharacteristic.CameraTriggerEnum
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleDeviceState
-import com.alejandrohcruz.blecamera.bluetooth.gatt.listeners.BleCameraListener
-import com.alejandrohcruz.blecamera.bluetooth.gatt.listeners.BleNotificationListener
-import com.alejandrohcruz.blecamera.bluetooth.gatt.listeners.BleReadWriteListener
+import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.BleCameraListenerContract
+import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.BleNotificationListenerContract
+import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.BleReadWriteListenerContract
+import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.GattManagerContract
 import com.alejandrohcruz.blecamera.bluetooth.utils.toByteArray
 import toByteArray
 import java.util.concurrent.TimeUnit
 
 abstract class BaseGattManager(
     applicationContext: Context?,
-    var bleCameraListener: BleCameraListener?
+    var bleCameraListener: BleCameraListenerContract?
 ) : ContextWrapper(applicationContext), GattManagerContract, BleCameraApi {
 
     // TODO: Bluetooth adapter state. Add a delay in the tests?
 
     // TODO: Support multiple devices
     override var bleCameraDevice: BleDeviceContract? = null
-
-    // TODO: Mock these 2
-    open val readWriteListener = BleReadWriteListener()
-    open val notificationListener = BleNotificationListener()
 
     @CallSuper
      override fun onDeviceConnected(macAddress: String) {
@@ -107,27 +104,5 @@ abstract class BaseGattManager(
 
     override fun stopVideoRecording() {
         writeToTriggerCameraCharacteristic(CameraTriggerEnum.StopVideoRecording)
-    }
-
-    companion object {
-
-        private var instance: MockGattManager? = null
-
-        /**
-         * Entry point for the app module.
-         */
-        fun getInstance(
-            applicationContext: Context?,
-            bleCameraListener: BleCameraListener?
-        ): BleCameraApi {
-            return instance ?: MockGattManager(
-                applicationContext,
-                bleCameraListener
-            )
-        }
-
-        fun destroyInstance() {
-            instance = null
-        }
     }
 }
