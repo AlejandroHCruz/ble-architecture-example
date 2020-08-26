@@ -13,9 +13,6 @@ import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraS
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService.TriggerCameraCharacteristic.CameraTriggerEnum
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleDeviceState
 import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.GattManagerContract
-import com.alejandrohcruz.blecamera.bluetooth.utils.toByteArray
-import toByteArray
-import java.util.concurrent.TimeUnit
 
 abstract class BaseGattManager(
     applicationContext: Context?,
@@ -44,36 +41,11 @@ abstract class BaseGattManager(
 
     override fun sendGps(location: Location): BleEnqueueingError {
 
-        val data = ArrayList<Byte>()
-
-        val date: ByteArray
-
-        try {
-            // 4 bytes for the Unit time (seconds since January 1st 1970)
-            date = TimeUnit.MILLISECONDS.toSeconds(location.time).toInt().toByteArray()
-        } catch (e: RuntimeException) {
-            return BleEnqueueingError.InvalidBleOperationConfiguration
-        }
-
-        // TODO: Split into sub-functions and unit test these things
-
-        // latitude & longitude: 4 bytes (Degree x 10^7)
-        val longitude = location.longitude.times(10000000).toInt().toByteArray()
-        val latitude = location.latitude.times(10000000).toInt().toByteArray()
-
-        // 2 bytes (meters as short) for altitude
-        val altitude = location.altitude.toInt().toShort().toByteArray()
-
-        date.forEach { data.add(it) }
-        longitude.forEach { data.add(it) }
-        latitude.forEach { data.add(it) }
-        altitude.forEach { data.add(it) }
-
-        val dataAsLittleEndian = data.toByteArray().reversedArray() // little endian
+        val data = GattPackagesBuilder.buildGpsData(location)
 
         bleCameraDevice?.let {
             return it.write(
-                BleOperation(CameraService, GpsResponseCharacteristic, dataAsLittleEndian)
+                BleOperation(CameraService, GpsResponseCharacteristic, data)
             )
         } ?: return BleEnqueueingError.DeviceIsNull
     }
@@ -86,7 +58,7 @@ abstract class BaseGattManager(
                 BleOperation(
                     CameraService,
                     TriggerCameraCharacteristic,
-                    cameraTriggerEnum.ordinal.toByteArray()
+                    GattPackagesBuilder.buildCameraTriggerData(cameraTriggerEnum)
                 )
             )
         } ?: return BleEnqueueingError.DeviceIsNull
