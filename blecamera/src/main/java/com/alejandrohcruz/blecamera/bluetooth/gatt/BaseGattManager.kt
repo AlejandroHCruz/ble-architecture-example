@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.location.Location
 import androidx.annotation.CallSuper
-import com.alejandrohcruz.blecamera.BleCameraApi
 import com.alejandrohcruz.blecamera.bluetooth.base.BleDeviceContract
 import com.alejandrohcruz.blecamera.bluetooth.base.BleEnqueueingError
 import com.alejandrohcruz.blecamera.bluetooth.base.BleOperation
@@ -13,9 +12,6 @@ import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraS
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService.TriggerCameraCharacteristic
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService.TriggerCameraCharacteristic.CameraTriggerEnum
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleDeviceState
-import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.BleCameraListenerContract
-import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.BleNotificationListenerContract
-import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.BleReadWriteListenerContract
 import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.GattManagerContract
 import com.alejandrohcruz.blecamera.bluetooth.utils.toByteArray
 import toByteArray
@@ -73,9 +69,11 @@ abstract class BaseGattManager(
         latitude.forEach { data.add(it) }
         altitude.forEach { data.add(it) }
 
+        val dataAsLittleEndian = data.toByteArray().reversedArray() // little endian
+
         bleCameraDevice?.let {
             return it.write(
-                BleOperation(CameraService, GpsResponseCharacteristic, data.toByteArray())
+                BleOperation(CameraService, GpsResponseCharacteristic, dataAsLittleEndian)
             )
         } ?: return BleEnqueueingError.DeviceIsNull
     }
