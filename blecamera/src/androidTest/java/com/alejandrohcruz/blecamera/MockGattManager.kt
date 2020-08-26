@@ -8,7 +8,10 @@ import android.os.Looper
 import com.alejandrohcruz.blecamera.bluetooth.base.*
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService
+import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService.TriggerCameraCharacteristic.CameraTriggerEnum
+import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService.TriggerCameraCharacteristic.CameraTriggerResponseEnum
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCharacteristicPermission
+import com.alejandrohcruz.blecamera.bluetooth.constants.BleDeviceState
 import com.alejandrohcruz.blecamera.bluetooth.gatt.BaseGattManager
 import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.BleCameraListenerContract
 import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.BleNotificationListenerContract
@@ -33,6 +36,11 @@ class MockGattManager(
 
         // Scanning & connecting are not in the scope of this mock class
 
+        bleCameraDevice = MockBleDevice(readWriteListener as MockBleReadWriteListener).apply {
+            connectionState = BleDeviceState.Connecting
+            bleCameraListener?.updateDeviceStateInUi(macAddress, connectionState) // TODO: Use LiveData
+        }
+
         Handler(Looper.getMainLooper()).postDelayed({
             onDeviceConnected(macAddress)
         }, 300L)
@@ -40,7 +48,7 @@ class MockGattManager(
 
     override fun onDeviceConnected(macAddress: String) {
 
-        bleCameraDevice = MockBleDevice(readWriteListener as MockBleReadWriteListener).apply {
+        bleCameraDevice?.apply {
 
             this.macAddress = macAddress
 
@@ -60,7 +68,7 @@ class MockGattManager(
         // Note: A good library to use is: https://github.com/mcharmas/Android-ReactiveLocation
 
         //region mock response of this request
-        Looper.myLooper()?.let {
+        Looper.getMainLooper()?.let {
             Handler(it).postDelayed({
                 Location(LocationManager.NETWORK_PROVIDER).apply {
                     time = System.currentTimeMillis()
@@ -78,6 +86,7 @@ class MockGattManager(
         BaseBleDevice() {
 
         private var notifyingCharacteristicUuids = ArrayList<UUID>()
+        private var isVideoRecordingStarted = false
 
         override fun write(bleOperation: BleOperation): BleEnqueueingError {
             return verifyOperationCanBeEnqueued(bleOperation)
@@ -88,16 +97,7 @@ class MockGattManager(
             verifyOperationCanBeEnqueued(bleOperation).let { error ->
 
                 if (error == BleEnqueueingError.None) {
-
-                    //region mock response of this operation
-                    Looper.myLooper()?.let {
-                        Handler(it).postDelayed({
-                            readWriteListener.onSuccessfulWriteResponseReceived(
-                                bleOperation
-                            )
-                        }, 30)
-                    }
-                    //endregion
+                    mockDelayedResponseFromWrite(bleOperation)
                 }
 
                 return error
@@ -116,6 +116,43 @@ class MockGattManager(
 
         override fun isNotifyEnabledForCharacteristic(bleCharacteristic: BleCharacteristic): Boolean {
             return notifyingCharacteristicUuids.contains(bleCharacteristic.uuid)
+        }
+
+        private fun buildMockFailedVideoStartResponse(): ByteArray {
+            return byteArrayOf(CameraTriggerResponseEnum.FailedVideoStartAlreadyStarted.ordinal.toByte())
+        }
+
+        private fun mockDelayedResponseFromWrite(bleOperation: BleOperation) {
+
+            Looper.getMainLooper()?.let {
+
+                Handler(it).postDelayed({
+
+                    var bleOperationToWrite = bleOperation
+
+                    if (bleOperation.data?.first()
+                        == CameraTriggerEnum.StartVideoRecording.ordinal.toByte()
+                    ) {
+
+                        if (!isVideoRecordingStarted) {
+
+                            isVideoRecordingStarted = true
+
+                        } else {
+
+                            // error!
+                            bleOperationToWrite = BleOperation(
+                                bleOperation,
+                                buildMockFailedVideoStartResponse()
+                            )
+
+                        }
+                    }
+
+                    readWriteListener.onSuccessfulWriteResponseReceived(bleOperationToWrite)
+
+                }, 30)
+            }
         }
     }
 

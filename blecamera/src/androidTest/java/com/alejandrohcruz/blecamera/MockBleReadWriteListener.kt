@@ -19,7 +19,7 @@ internal class MockBleReadWriteListener(override val gattManager: GattManagerCon
 
             TriggerCameraCharacteristic.uuid -> {
 
-                val responseAsInt = bleOperation.data?.toIntLittleEndian()
+                val responseAsInt = bleOperation.data?.first()?.toInt()
 
                 val responseEnum =
                     CameraTriggerResponseEnum.fromInt(responseAsInt)

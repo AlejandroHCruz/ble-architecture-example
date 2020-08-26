@@ -16,7 +16,7 @@ object BleCameraProfile {
     object CameraService : BleService {
 
         // Fixme: This should be a valid UUID. Get the specifications from the client.
-        override val uuid: UUID = UUID.fromString("000")
+        override val uuid: UUID = UUID.fromString("00001101-0000-1000-1000-001010100000")
 
         object GpsRequestCharacteristic : BleCharacteristic {
             override val uuid: UUID = UUID.fromString("1af4d6c9-463b-4536-9bd9-035c9ae0511b")

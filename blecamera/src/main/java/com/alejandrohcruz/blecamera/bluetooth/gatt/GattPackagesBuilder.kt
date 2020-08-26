@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 object GattPackagesBuilder {
 
     fun buildCameraTriggerData(cameraTriggerEnum: CameraTriggerEnum): ByteArray {
-        return cameraTriggerEnum.ordinal.toByteArray()
+        return byteArrayOf(cameraTriggerEnum.ordinal.toByte())
     }
 
     fun buildGpsData(location: Location): ByteArray {

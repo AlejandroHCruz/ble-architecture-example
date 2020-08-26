@@ -17,7 +17,7 @@ class MockBleNotificationListener(override var gattManager: GattManagerContract)
 
         when (val characteristicUuid = bleOperation.bleCharacteristic.uuid) {
             GpsRequestCharacteristic.uuid -> {
-                val responseAsInt = bleOperation.data?.toIntLittleEndian()
+                val responseAsInt = bleOperation.data?.first()?.toInt()
                 if (responseAsInt == GpsRequest.Requested.ordinal) {
                     gattManager.onGpsRequested()
                 } else {
