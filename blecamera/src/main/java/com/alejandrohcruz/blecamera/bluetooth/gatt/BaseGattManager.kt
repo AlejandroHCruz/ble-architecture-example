@@ -20,7 +20,6 @@ abstract class BaseGattManager(
 
     // TODO: Bluetooth adapter state. Add a delay in the tests?
 
-    // TODO: Support multiple devices
     override var bleCameraDevice: BleDeviceContract? = null
 
     @CallSuper

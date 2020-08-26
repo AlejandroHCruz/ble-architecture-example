@@ -63,7 +63,7 @@ object GattPackagesBuilder {
      * Produces 4 bytes (Degree x 10^7)
      */
     @VisibleForTesting
-    private fun buildLatitudeOrLongitudeData(latOrLong: Double): ByteArray {
+    internal fun buildLatitudeOrLongitudeData(latOrLong: Double): ByteArray {
         return latOrLong.times(10_000_000).toInt().toByteArray()
     }
 
