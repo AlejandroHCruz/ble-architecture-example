@@ -18,8 +18,6 @@ abstract class BaseGattManager(
     applicationContext: Context?,
 ) : ContextWrapper(applicationContext), GattManagerContract {
 
-    // TODO: Bluetooth adapter state. Add a delay in the tests?
-
     override var bleCameraDevice: BleDeviceContract? = null
 
     @CallSuper
