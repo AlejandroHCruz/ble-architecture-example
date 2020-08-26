@@ -2,6 +2,7 @@ package com.alejandrohcruz.blecamera
 
 import android.content.Context
 import android.location.Location
+import android.location.LocationManager
 import android.os.Handler
 import android.os.Looper
 import com.alejandrohcruz.blecamera.bluetooth.base.*
@@ -61,7 +62,7 @@ class MockGattManager(
         //region mock response of this request
         Looper.myLooper()?.let {
             Handler(it).postDelayed({
-                Location("MockGattManager").apply {
+                Location(LocationManager.NETWORK_PROVIDER).apply {
                     time = System.currentTimeMillis()
                     latitude = 25.42321
                     longitude = -101.0053

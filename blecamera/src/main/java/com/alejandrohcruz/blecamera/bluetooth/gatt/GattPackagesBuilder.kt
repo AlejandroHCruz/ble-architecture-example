@@ -1,6 +1,7 @@
 package com.alejandrohcruz.blecamera.bluetooth.gatt
 
 import android.location.Location
+import androidx.annotation.VisibleForTesting
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService.TriggerCameraCharacteristic.CameraTriggerEnum
 import com.alejandrohcruz.blecamera.bluetooth.utils.toByteArray
 import com.alejandrohcruz.blecamera.bluetooth.utils.toReversedByteArray
@@ -29,7 +30,8 @@ object GattPackagesBuilder {
     /**
      * Produces 4 bytes (seconds since January 1st 1970)
      */
-    private fun buildDateData(location: Location):ByteArray {
+    @VisibleForTesting
+    internal fun buildDateData(location: Location):ByteArray {
         return try {
             TimeUnit.MILLISECONDS.toSeconds(location.time).toInt().toByteArray()
         } catch (e: RuntimeException) {
@@ -41,6 +43,7 @@ object GattPackagesBuilder {
     /**
      * Encodes the latitude, longitude and altitude.
      */
+    @VisibleForTesting
     private fun buildLocationData(location: Location): ArrayList<Byte> {
         ArrayList<Byte>().apply {
             buildLatitudeOrLongitudeData(location.latitude).forEach {
@@ -59,6 +62,7 @@ object GattPackagesBuilder {
     /**
      * Produces 4 bytes (Degree x 10^7)
      */
+    @VisibleForTesting
     private fun buildLatitudeOrLongitudeData(latOrLong: Double): ByteArray {
         return latOrLong.times(10_000_000).toInt().toByteArray()
     }
@@ -66,6 +70,7 @@ object GattPackagesBuilder {
     /**
      * Produces 2 bytes (meters as short)
      */
+    @VisibleForTesting
     private fun buildAltitudeData(location: Location): ByteArray {
         return location.altitude.toInt().toShort().toByteArray()
     }
