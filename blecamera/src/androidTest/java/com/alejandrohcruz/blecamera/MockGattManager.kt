@@ -5,6 +5,7 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Handler
 import android.os.Looper
+import androidx.annotation.VisibleForTesting
 import com.alejandrohcruz.blecamera.bluetooth.base.*
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService
@@ -24,19 +25,23 @@ class MockGattManager(
     override var bleCameraListener: BleCameraListenerContract?
 ) : BaseGattManager(applicationContext) {
 
-    // TODO: Bluetooth adapter state. Add a delay in the tests for that?
-
     override var bleCameraDevice: BleDeviceContract? = null
 
     override val readWriteListener: BleReadWriteListenerContract = MockBleReadWriteListener(this)
     override val notificationListener: BleNotificationListenerContract =
         MockBleNotificationListener(this)
 
+    @VisibleForTesting
+    internal var gpsRequestSuccessfullyWritten = false
+
     override fun connect(macAddress: String) {
 
         // Scanning & connecting are not in the scope of this mock class
 
-        bleCameraDevice = MockBleDevice(readWriteListener as MockBleReadWriteListener).apply {
+        bleCameraDevice = MockBleDevice(
+            readWriteListener as MockBleReadWriteListener,
+            notificationListener as MockBleNotificationListener
+        ).apply {
             connectionState = BleDeviceState.Connecting
             bleCameraListener?.updateDeviceStateInUi(macAddress, connectionState) // TODO: Use LiveData
         }
@@ -82,7 +87,16 @@ class MockGattManager(
         //endregion
     }
 
-    internal class MockBleDevice(private val readWriteListener: MockBleReadWriteListener) :
+    override fun sendGps(location: Location): BleEnqueueingError {
+        val bleEnqueueingError =  super.sendGps(location)
+        gpsRequestSuccessfullyWritten = bleEnqueueingError == BleEnqueueingError.None
+        return bleEnqueueingError
+    }
+
+    internal class MockBleDevice(
+        private val readWriteListener: MockBleReadWriteListener,
+        private val notificationListener: MockBleNotificationListener
+    ) :
         BaseBleDevice() {
 
         private var notifyingCharacteristicUuids = ArrayList<UUID>()
@@ -150,6 +164,19 @@ class MockGattManager(
                     }
 
                     readWriteListener.onSuccessfulWriteResponseReceived(bleOperationToWrite)
+
+                }, 30)
+            }
+        }
+
+        @VisibleForTesting
+        internal fun mockDelayedNotification(bleOperation: BleOperation) {
+
+            Looper.getMainLooper()?.let {
+
+                Handler(it).postDelayed({
+
+                    notificationListener.onSuccessfulNotificationReceived(bleOperation)
 
                 }, 30)
             }

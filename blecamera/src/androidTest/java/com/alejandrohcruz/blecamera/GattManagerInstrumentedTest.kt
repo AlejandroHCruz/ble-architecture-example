@@ -1,13 +1,16 @@
 package com.alejandrohcruz.blecamera
 
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.alejandrohcruz.blecamera.bluetooth.base.BleEnqueueingError
+import com.alejandrohcruz.blecamera.bluetooth.base.BleOperation
+import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile
+import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService.GpsRequestCharacteristic
+import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService.GpsRequestCharacteristic.GpsRequest
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleCameraProfile.CameraService.TriggerCameraCharacteristic.CameraTriggerResponseEnum
 import com.alejandrohcruz.blecamera.bluetooth.constants.BleDeviceState
 import com.alejandrohcruz.blecamera.bluetooth.gatt.contracts.BleCameraListenerContract
 import junit.framework.Assert.assertEquals
-
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -296,6 +299,107 @@ class GattManagerInstrumentedTest {
         Thread.sleep(60)
         assertEquals(CameraTriggerResponseEnum.SuccessfulVideoStart, cameraActionSuccess)
         assertEquals(CameraTriggerResponseEnum.FailedVideoStartAlreadyStarted, cameraActionError)
+    }
+    //endregion
+
+    //region notification
+    @Test
+    fun writeWithResponse_enableNotify_isCorrect() {
+
+        val gattManager = MockGattManager.getInstance(
+            appContext,
+            object : BleCameraListenerContract {
+                override fun showCustomForegroundLocationPermissionDialog() {
+                    // Intentionally left empty
+                }
+
+                override fun showCustomEnableLocationServicesDialog() {
+                    // Intentionally left empty
+                }
+
+                override fun showCustomEnableBluetoothDialog() {
+                    // Intentionally left empty
+                }
+
+                override fun updateDeviceStateInUi(
+                    macAddress: String,
+                    connectionState: BleDeviceState
+                ) {
+                    // Intentionally left empty
+                }
+
+                override fun onCameraActionSuccess(responseEnum: CameraTriggerResponseEnum) {
+                    // Intentionally left empty
+                }
+
+                override fun onCameraActionError(responseEnum: CameraTriggerResponseEnum) {
+                    // Intentionally left empty
+                }
+            }
+        )
+
+        gattManager.connect(macAddress)
+        Thread.sleep(350)
+        assertEquals(
+            true,
+            ((gattManager as MockGattManager).bleCameraDevice as MockGattManager.MockBleDevice)
+                .isDeviceConnected()
+        )
+        assertEquals(
+            true,
+            (gattManager.bleCameraDevice as MockGattManager.MockBleDevice).isNotifyEnabledForCharacteristic(
+                GpsRequestCharacteristic
+            )
+        )
+    }
+
+    @Test
+    fun writeWithResponse_notification_sendGps_isCorrect() {
+
+        val gattManager = MockGattManager.getInstance(
+            appContext,
+            object : BleCameraListenerContract {
+                override fun showCustomForegroundLocationPermissionDialog() {
+                    // Intentionally left empty
+                }
+
+                override fun showCustomEnableLocationServicesDialog() {
+                    // Intentionally left empty
+                }
+
+                override fun showCustomEnableBluetoothDialog() {
+                    // Intentionally left empty
+                }
+
+                override fun updateDeviceStateInUi(
+                    macAddress: String,
+                    connectionState: BleDeviceState
+                ) {
+                    // Intentionally left empty
+                }
+
+                override fun onCameraActionSuccess(responseEnum: CameraTriggerResponseEnum) {
+                    // Intentionally left empty
+                }
+
+                override fun onCameraActionError(responseEnum: CameraTriggerResponseEnum) {
+                    // Intentionally left empty
+                }
+            }
+        )
+
+        gattManager.connect(macAddress)
+        Thread.sleep(350)
+        ((gattManager as MockGattManager).bleCameraDevice as MockGattManager.MockBleDevice)
+            .mockDelayedNotification(
+                BleOperation(
+                    BleCameraProfile.CameraService,
+                    GpsRequestCharacteristic,
+                    byteArrayOf(GpsRequest.Requested.ordinal.toByte())
+                )
+            )
+        Thread.sleep(200)
+        assertEquals(true, gattManager.gpsRequestSuccessfullyWritten)
     }
     //endregion
 
